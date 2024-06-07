@@ -52,7 +52,7 @@ def webhook():
 
 @app.route('/set_webhook', methods=['GET', 'POST'])
 def set_webhook():
-    webhook_url = f"https://<your-render-service-url>/webhook"
+    webhook_url = f"https://webhook-tawk-io.onrender.com/webhook"
     bot.set_webhook(url=webhook_url)
     return "Webhook set"
 
