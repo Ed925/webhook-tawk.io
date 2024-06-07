@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, abort
 app = Flask(__name__)
 
 # Replace 'your_generated_secret' with the secret you generated
-WEBHOOK_SECRET = 'dabeafa65b124c0913967e5c9b608f08'
+WEBHOOK_SECRET = 'your_generated_secret'
 
 def verify_signature(request):
     signature = request.headers.get('X-Hub-Signature-256')
