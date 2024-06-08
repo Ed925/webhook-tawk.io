@@ -8,14 +8,13 @@ app = Flask(__name__)
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TAWK_API_KEY = os.getenv('TAWK_API_KEY')
 TAWK_PROPERTY_ID = os.getenv('TAWK_PROPERTY_ID')
-TAWK_CHAT_ID = os.getenv('TAWK_CHAT_ID')
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-@app.route('/telegram_webhook', methods=['POST'])
-def telegram_webhook():
+@app.route('/webhook', methods=['POST'])
+def webhook():
     data = request.json
     logging.info('Telegram webhook received: %s', data)
     
@@ -25,16 +24,15 @@ def telegram_webhook():
         text = data['message']['text']
         
         # Forward the message to Tawk.to
-        send_to_tawk(chat_id, text)
+        send_to_tawk(text)
     
     return '', 200
 
-def send_to_tawk(chat_id, text):
-    tawk_url = f"https://api.tawk.to/chats/{TAWK_CHAT_ID}/messages"
+def send_to_tawk(text):
+    tawk_url = f"https://api.tawk.to/property/{TAWK_PROPERTY_ID}/conversations"
     payload = {
-        'message': text,
-        'sender': 'telegram_bot',
-        'chat_id': chat_id
+        'text': text,
+        'sender': 'telegram_bot'
     }
     headers = {
         'Content-Type': 'application/json',
