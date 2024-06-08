@@ -1,4 +1,4 @@
-from flask import Flask, request, abort
+from flask import Flask, request
 import requests
 import os
 import logging
@@ -6,39 +6,43 @@ import logging
 app = Flask(__name__)
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+TAWK_API_KEY = os.getenv('TAWK_API_KEY')
+TAWK_PROPERTY_ID = os.getenv('TAWK_PROPERTY_ID')
+TAWK_CHAT_ID = os.getenv('TAWK_CHAT_ID')
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    # Log incoming request headers
-    logging.info('Headers: %s', request.headers)
-    logging.info('Webhook received: %s', request.json)
-    
-    # Validate the webhook secret
-    received_secret = request.headers.get('X-Tawk-Signature')
-    if received_secret != WEBHOOK_SECRET:
-        logging.warning('Invalid webhook secret: %s', received_secret)
-        abort(403)  # Forbidden
-    
+@app.route('/telegram_webhook', methods=['POST'])
+def telegram_webhook():
     data = request.json
-    message = data.get('message', 'New event on Tawk.to')
+    logging.info('Telegram webhook received: %s', data)
     
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        'chat_id': TELEGRAM_CHAT_ID,
-        'text': message
-    }
-    
-    response = requests.post(telegram_url, data=payload)
-    
-    # Log the response from Telegram API
-    logging.info('Telegram response: %s', response.text)
+    # Process the incoming message
+    if 'message' in data:
+        chat_id = data['message']['chat']['id']
+        text = data['message']['text']
+        
+        # Forward the message to Tawk.to
+        send_to_tawk(chat_id, text)
     
     return '', 200
+
+def send_to_tawk(chat_id, text):
+    tawk_url = f"https://api.tawk.to/chats/{TAWK_CHAT_ID}/messages"
+    payload = {
+        'message': text,
+        'sender': 'telegram_bot',
+        'chat_id': chat_id
+    }
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {TAWK_API_KEY}'
+    }
+    
+    response = requests.post(tawk_url, json=payload, headers=headers)
+    logging.info('Tawk.to response: %s', response.text)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
