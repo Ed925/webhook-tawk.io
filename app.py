@@ -1,10 +1,11 @@
 from flask import Flask, request
 import requests
+import os
 
 app = Flask(__name__)
 
-TELEGRAM_BOT_TOKEN = 'your_telegram_bot_token'
-TELEGRAM_CHAT_ID = 'your_telegram_chat_id'
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -22,3 +23,4 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
